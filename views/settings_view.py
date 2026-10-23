@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -40,14 +41,23 @@ class SettingsView(QWidget):
         self.refresh_connection()
 
     def _build(self) -> None:
-        root = QVBoxLayout(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.viewport().setObjectName("page")
+
+        content = QWidget(objectName="page")
+        root = QVBoxLayout(content)
         root.setContentsMargins(28, 24, 28, 28)
         root.setSpacing(18)
 
         title = QLabel("Configuración", objectName="heading")
-        subtitle = QLabel(
-            "Administre en un solo lugar la apariencia, las actualizaciones, la conexión y su cuenta.",
-            objectName="muted",
+        subtitle = self._label(
+            "Administre en un solo lugar la apariencia, las actualizaciones, la conexión y su cuenta."
         )
         root.addWidget(title)
         root.addWidget(subtitle)
@@ -73,9 +83,9 @@ class SettingsView(QWidget):
         updates, updates_layout = self._card("Actualizaciones", "Control de nuevas versiones publicadas en GitHub.")
         self.automatic_updates = QCheckBox("Buscar actualizaciones al iniciar")
         updates_layout.addWidget(self.automatic_updates)
-        updates_layout.addWidget(QLabel(f"Versión instalada: {self.service.settings.app_version}", objectName="muted"))
+        updates_layout.addWidget(self._label(f"Versión instalada: {self.service.settings.app_version}"))
         repository = self.service.settings.github_repository or "No configurado"
-        updates_layout.addWidget(QLabel(f"Repositorio: {repository}", objectName="muted"))
+        updates_layout.addWidget(self._label(f"Repositorio: {repository}"))
         self.update_status = QLabel("Listo para buscar actualizaciones.", objectName="muted")
         self.update_status.setWordWrap(True)
         updates_layout.addWidget(self.update_status)
@@ -97,9 +107,7 @@ class SettingsView(QWidget):
         refresh_button = QPushButton("Comprobar estado")
         refresh_button.clicked.connect(self.refresh_connection)
         connection_layout.addWidget(refresh_button)
-        connection_layout.addWidget(
-            QLabel("Las credenciales no se muestran ni se guardan en esta pantalla por seguridad.", objectName="muted")
-        )
+        connection_layout.addWidget(self._label("Las credenciales no se muestran ni se guardan en esta pantalla por seguridad."))
         connection_layout.addStretch()
         grid.addWidget(connection, 1, 0)
 
@@ -112,9 +120,7 @@ class SettingsView(QWidget):
         permissions = "Acceso total" if self.session.role == "administrador" else f"{len(self.session.permissions)} permisos asignados"
         account_form.addRow("Permisos", QLabel(permissions))
         account_layout.addLayout(account_form)
-        account_layout.addWidget(
-            QLabel("Los usuarios, roles y permisos se administran desde el módulo Usuarios.", objectName="muted")
-        )
+        account_layout.addWidget(self._label("Los usuarios, roles y permisos se administran desde el módulo Usuarios."))
         account_layout.addStretch()
         grid.addWidget(account, 1, 1)
 
@@ -124,15 +130,20 @@ class SettingsView(QWidget):
         grid.setRowStretch(1, 1)
 
         actions = QHBoxLayout()
+        actions.setContentsMargins(28, 8, 28, 16)
         actions.addStretch()
         save_button = QPushButton("Guardar configuración", objectName="gold")
         save_button.clicked.connect(self.save)
         actions.addWidget(save_button)
-        root.addLayout(actions)
+
+        scroll.setWidget(content)
+        outer.addWidget(scroll)
+        outer.addLayout(actions)
 
     @staticmethod
     def _card(title: str, description: str) -> tuple[QFrame, QVBoxLayout]:
         card = QFrame(objectName="card")
+        card.setMinimumHeight(245)
         layout = QVBoxLayout(card)
         layout.setContentsMargins(20, 18, 20, 18)
         layout.setSpacing(10)
@@ -142,6 +153,12 @@ class SettingsView(QWidget):
         layout.addWidget(heading)
         layout.addWidget(helper)
         return card, layout
+
+    @staticmethod
+    def _label(text: str) -> QLabel:
+        label = QLabel(text, objectName="muted")
+        label.setWordWrap(True)
+        return label
 
     def sync_from_preferences(self) -> None:
         index = self.theme.findData(self.preferences.theme)

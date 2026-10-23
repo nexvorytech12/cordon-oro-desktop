@@ -17,6 +17,7 @@ def stylesheet(theme: str = "light") -> str:
     return f"""
     * {{ font-family: 'Segoe UI'; font-size: 10pt; color: {text}; }}
     QMainWindow, QDialog, QWidget#page {{ background: {bg}; }}
+    QScrollArea {{ background: {bg}; border: none; }}
     QFrame#card {{ background: {card}; border: 1px solid {border}; border-radius: 12px; }}
     QFrame#topbar {{ background: {card}; border: none; border-bottom: 1px solid {border}; }}
     QFrame#logoPanel {{ background: #102A43; border: 1px solid #294762; border-radius: 12px; }}

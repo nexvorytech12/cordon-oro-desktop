@@ -19,7 +19,7 @@ class Settings:
     supabase_url: str
     supabase_anon_key: str
     app_env: str = "production"
-    app_version: str = "0.1.2"
+    app_version: str = "0.1.3"
     github_repository: str = ""
     update_enabled: bool = True
 
@@ -55,7 +55,7 @@ class Settings:
             url,
             key,
             os.getenv("APP_ENV", "production"),
-            os.getenv("APP_VERSION", "0.1.2"),
+            os.getenv("APP_VERSION", "0.1.3"),
             os.getenv("GITHUB_REPOSITORY", "").strip(),
             os.getenv("UPDATE_ENABLED", "true").strip().lower() in {"1", "true", "yes", "si", "sí"},
         )
