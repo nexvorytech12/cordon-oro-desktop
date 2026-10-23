@@ -19,12 +19,14 @@ def stylesheet(theme: str = "light") -> str:
     QMainWindow, QDialog, QWidget#page {{ background: {bg}; }}
     QScrollArea {{ background: {bg}; border: none; }}
     QFrame#card {{ background: {card}; border: 1px solid {border}; border-radius: 12px; }}
+    QFrame#chartCard {{ background: #FFFFFF; border: 1px solid #E2E7EC; border-radius: 12px; }}
     QFrame#topbar {{ background: {card}; border: none; border-bottom: 1px solid {border}; }}
     QFrame#logoPanel {{ background: #102A43; border: 1px solid #294762; border-radius: 12px; }}
     QFrame#loginHero {{ background: {sidebar}; border: none; border-right: 1px solid {border}; }}
     QLabel#brand {{ color: #B28A36; font-size: 17pt; font-weight: 700; }}
     QLabel#heading {{ font-size: 20pt; font-weight: 700; }}
     QLabel#sectionHeading {{ font-size: 13pt; font-weight: 700; }}
+    QLabel#chartTitle {{ color: #17334D; font-size: 11pt; font-weight: 700; }}
     QLabel#muted {{ color: {muted}; }}
     QLabel#metric {{ color: #A77D28; font-size: 23pt; font-weight: 700; }}
     QLabel#statusOnline {{ color: #23835A; font-weight: 700; }}
