@@ -48,7 +48,8 @@ jobs:
       - name: Construir aplicación
         shell: pwsh
         run: |
-          python -m PyInstaller --noconfirm --clean --windowed --name CordonDeOro --collect-all pyqtgraph --collect-all supabase --add-data "assets;assets" main.py
+          python scripts/generate_brand_assets.py
+          python -m PyInstaller --noconfirm --clean --windowed --name CordonDeOro --icon assets/icon.ico --collect-all pyqtgraph --collect-all supabase --add-data "assets;assets" main.py
           Copy-Item -LiteralPath .env -Destination dist\CordonDeOro\.env -Force
 
       - name: Instalar Inno Setup

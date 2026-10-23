@@ -12,6 +12,7 @@ from config.settings import Settings, SettingsError
 from services.supabase_service import SupabaseService
 from ui.login_window import LoginWindow
 from ui.styles import stylesheet
+from utils.resources import resource_path
 
 
 def configure_logging() -> None:
@@ -32,7 +33,7 @@ def main() -> int:
     app.setStyle("Fusion")
     app.setStyleSheet(stylesheet("light"))
 
-    icon_path = Path(__file__).parent / "assets" / "icon.ico"
+    icon_path = resource_path("assets/icon.ico")
     if icon_path.exists():
         app.setWindowIcon(QIcon(str(icon_path)))
 

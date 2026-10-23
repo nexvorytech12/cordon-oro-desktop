@@ -9,6 +9,7 @@ if (-not (Test-Path -LiteralPath '.venv\Scripts\python.exe')) {
 & '.venv\Scripts\python.exe' -m pip install --upgrade pip
 & '.venv\Scripts\python.exe' -m pip install -r requirements.txt
 & '.venv\Scripts\python.exe' -m pytest
+& '.venv\Scripts\python.exe' 'scripts\generate_brand_assets.py'
 
 $PyInstallerArgs = @(
     '--noconfirm', '--clean', '--windowed', '--name', 'CordonDeOro',

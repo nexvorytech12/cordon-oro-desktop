@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QEasingCurve, QObject, QProcess, QPropertyAnimation, QThread, QTimer, Signal
+from PySide6.QtCore import QEasingCurve, QObject, QProcess, QPropertyAnimation, QThread, QTimer, Qt, Signal
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QApplication, QFrame, QHBoxLayout, QLabel, QMainWindow, QMessageBox,
     QLineEdit, QProgressDialog, QPushButton, QStackedWidget, QStatusBar, QVBoxLayout, QWidget,
@@ -15,6 +16,7 @@ from views.modules import CustomersView, InventoryView, orders_view, production_
 from views.reports_view import ReportsView
 from views.sales import CashView, SalesView
 from views.admin import UsersView
+from utils.resources import resource_path
 
 
 class RealtimeBridge(QObject):
@@ -40,6 +42,8 @@ class MainWindow(QMainWindow):
     def __init__(self, service: SupabaseService, session: UserSession):
         super().__init__(); self.service, self.session = service, session; self.dark = False
         self.setWindowTitle("Cordón de Oro — Sistema de Gestión Empresarial")
+        icon = resource_path("assets/icon.ico")
+        if icon.exists(): self.setWindowIcon(QIcon(str(icon)))
         self.setMinimumSize(1180, 720); self.bridge = RealtimeBridge(self); self.bridge.changed.connect(self._realtime_changed)
         self.updater = UpdateService(service.settings); self.update_worker = None; self.update_progress = None
         self._build()
@@ -51,8 +55,12 @@ class MainWindow(QMainWindow):
         central = QWidget(objectName="page"); root = QHBoxLayout(central); root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
         self.sidebar = QFrame(objectName="sidebar"); self.sidebar.setMinimumWidth(225); self.sidebar.setMaximumWidth(225)
         nav = QVBoxLayout(self.sidebar); nav.setContentsMargins(12, 18, 12, 18)
-        brand = QLabel("CORDÓN DE ORO"); brand.setObjectName("brand"); nav.addWidget(brand)
-        subtitle = QLabel("GESTIÓN EMPRESARIAL"); subtitle.setStyleSheet("color:#91A0B0; font-size:8pt; letter-spacing:1px;"); nav.addWidget(subtitle); nav.addSpacing(18)
+        logo_panel = QFrame(objectName="logoPanel")
+        logo_layout = QVBoxLayout(logo_panel); logo_layout.setContentsMargins(8, 7, 8, 7)
+        brand = QLabel(); brand.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_path = resource_path("assets/logo.png")
+        if logo_path.exists(): brand.setPixmap(QPixmap(str(logo_path)).scaled(188, 63, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        logo_layout.addWidget(brand); nav.addWidget(logo_panel); nav.addSpacing(12)
         self.stack = QStackedWidget()
         pages = [
             ("▦  Dashboard", DashboardView(self.service)),
@@ -77,7 +85,7 @@ class MainWindow(QMainWindow):
         collapse = QPushButton("☰  Contraer", objectName="nav"); collapse.clicked.connect(self._toggle_sidebar); nav.addWidget(collapse)
         root.addWidget(self.sidebar)
         right = QWidget(objectName="page"); right_layout = QVBoxLayout(right); right_layout.setContentsMargins(0, 0, 0, 0); right_layout.setSpacing(0)
-        top = QFrame(objectName="card"); top.setFixedHeight(58); top_layout = QHBoxLayout(top); top_layout.setContentsMargins(18, 8, 18, 8)
+        top = QFrame(objectName="topbar"); top.setFixedHeight(64); top_layout = QHBoxLayout(top); top_layout.setContentsMargins(18, 8, 18, 8)
         top_layout.addWidget(QLabel(f"{self.session.full_name}  ·  {self.session.role.replace('_', ' ').title()}")); top_layout.addStretch()
         self.global_search = QLineEdit(); self.global_search.setPlaceholderText("Buscar producto, cliente o pedido…"); self.global_search.setMaximumWidth(320); self.global_search.returnPressed.connect(self._search); top_layout.addWidget(self.global_search)
         theme = QPushButton("◐ Tema"); theme.clicked.connect(self._theme); top_layout.addWidget(theme)

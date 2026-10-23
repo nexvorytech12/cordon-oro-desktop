@@ -1,6 +1,6 @@
 #define MyAppName "Cordón de Oro — Sistema de Gestión Empresarial"
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1.0"
+  #define MyAppVersion "0.1.1"
 #endif
 #define MyAppPublisher "Cordón de Oro E.I.R.L."
 #define MyAppExeName "CordonDeOro.exe"
@@ -21,6 +21,9 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
 UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardStyle=modern
+SetupIconFile=..\assets\icon.ico
+WizardImageFile=wizard-large.bmp
+WizardSmallImageFile=wizard-small.bmp
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"

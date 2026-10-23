@@ -3,12 +3,14 @@ from __future__ import annotations
 import logging
 
 from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QCheckBox, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
     QMessageBox, QPushButton, QVBoxLayout, QWidget,
 )
 
 from services.supabase_service import SupabaseService
+from utils.resources import resource_path
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,8 @@ class LoginWindow(QMainWindow):
         self.worker: LoginWorker | None = None
         self.main_window = None
         self.setWindowTitle("Cordón de Oro — Acceso")
+        icon = resource_path("assets/icon.ico")
+        if icon.exists(): self.setWindowIcon(QIcon(str(icon)))
         self.setMinimumSize(900, 570)
         self._build()
 
@@ -44,23 +48,26 @@ class LoginWindow(QMainWindow):
         layout = QHBoxLayout(root)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        hero = QFrame(objectName="sidebar")
+        hero = QFrame(objectName="loginHero")
         hero.setMinimumWidth(390)
         hero_layout = QVBoxLayout(hero)
         hero_layout.setContentsMargins(55, 55, 55, 55)
         hero_layout.addStretch()
-        mark = QLabel("CO")
-        mark.setStyleSheet("font-size: 42pt; font-weight: 800; color: #C5A052;")
-        hero_layout.addWidget(mark)
-        title = QLabel("CORDÓN DE ORO")
-        title.setStyleSheet("font-size: 22pt; font-weight: 700; color: white;")
-        hero_layout.addWidget(title)
+        logo_panel = QFrame(objectName="logoPanel")
+        logo_layout = QVBoxLayout(logo_panel); logo_layout.setContentsMargins(20, 16, 20, 16)
+        logo = QLabel(); logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_path = resource_path("assets/logo.png")
+        if logo_path.exists():
+            logo.setPixmap(QPixmap(str(logo_path)).scaled(300, 105, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        logo_layout.addWidget(logo)
+        hero_layout.addWidget(logo_panel)
+        hero_layout.addSpacing(22)
         subtitle = QLabel("Gestión empresarial para confección,\nbordado y comercialización")
-        subtitle.setStyleSheet("font-size: 12pt; color: #CBD5DF; line-height: 1.4;")
+        subtitle.setStyleSheet("font-size: 12pt; color: #31485D; line-height: 1.4; font-weight: 600;")
         hero_layout.addWidget(subtitle)
         hero_layout.addStretch(2)
         safe = QLabel("🔒 Sesión protegida por Supabase Auth")
-        safe.setStyleSheet("color: #96AABE;")
+        safe.setStyleSheet("color: #6B7886;")
         hero_layout.addWidget(safe)
 
         panel = QWidget(objectName="page")
