@@ -1,0 +1,74 @@
+name: Publicar actualización de Windows
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        shell: pwsh
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar pruebas
+        shell: pwsh
+        run: python -m pytest
+
+      - name: Preparar configuración pública
+        shell: pwsh
+        env:
+          PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          @(
+            "SUPABASE_URL=$env:PUBLIC_SUPABASE_URL"
+            "SUPABASE_ANON_KEY=$env:PUBLIC_SUPABASE_KEY"
+            "APP_ENV=production"
+            "APP_VERSION=$version"
+            "GITHUB_REPOSITORY=${{ github.repository }}"
+            "UPDATE_ENABLED=true"
+          ) | Set-Content -LiteralPath .env -Encoding utf8
+
+      - name: Construir aplicación
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --windowed --name CordonDeOro --collect-all pyqtgraph --collect-all supabase --add-data "assets;assets" main.py
+          Copy-Item -LiteralPath .env -Destination dist\CordonDeOro\.env -Force
+
+      - name: Instalar Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Crear instalador
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" "installer\CordonDeOro.iss"
+          $installer = "output\CordonDeOro-Setup-$version.exe"
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $installer).Hash.ToLower()
+          "$hash  CordonDeOro-Setup-$version.exe" | Set-Content -LiteralPath "$installer.sha256" -Encoding ascii
+
+      - name: Publicar GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          gh release create "${{ github.ref_name }}" "output\CordonDeOro-Setup-$version.exe" "output\CordonDeOro-Setup-$version.exe.sha256" --generate-notes --title "Cordón de Oro $version"
+
