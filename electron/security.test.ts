@@ -15,4 +15,10 @@ describe("seguridad de Electron", () => {
     expect(main).toContain('url.startsWith("https://")');
     expect(main).toContain("if (!/^https:\\/\\//i.test(url))");
   });
+
+  it("carga electron-updater de forma compatible con CommonJS", () => {
+    expect(main).toContain('import updaterPackage from "electron-updater"');
+    expect(main).toContain("const { autoUpdater } = updaterPackage");
+    expect(main).not.toContain('import { autoUpdater } from "electron-updater"');
+  });
 });

@@ -70,7 +70,7 @@ Para crear la aplicación y el instalador NSIS:
 npm run dist
 ```
 
-El resultado se crea en `release\CordonDeOro-Setup-0.2.0.exe`. El instalador incluye Electron y todas las dependencias; los equipos finales no necesitan instalar Node.js.
+El resultado se crea en `release\CordonDeOro-Setup-<versión>.exe`. El instalador incluye Electron y todas las dependencias; los equipos finales no necesitan instalar Node.js.
 
 ## Actualizaciones mediante GitHub
 
@@ -80,7 +80,7 @@ La aplicación consulta GitHub Releases mediante `electron-updater`. La descarga
 2. Suba los cambios y publique una etiqueta semántica:
 
    ```powershell
-   git tag v0.2.0
+   git tag v0.2.1
    git push origin main --tags
    ```
 

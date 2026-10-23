@@ -46,6 +46,21 @@ jobs:
         run: |
           $version = "${{ github.ref_name }}".TrimStart('v')
           npm exec electron-builder -- --win nsis --publish never
+          $appPath = (Resolve-Path -LiteralPath "release\win-unpacked\Cordón de Oro.exe").Path
+          try {
+            $smokeProcess = Start-Process -FilePath $appPath -PassThru
+            Start-Sleep -Seconds 10
+            $smokeProcess.Refresh()
+            if ($smokeProcess.HasExited) {
+              throw "La aplicación empaquetada terminó durante la prueba de arranque."
+            }
+            if ($smokeProcess.MainWindowTitle -notlike "Cordón de Oro*") {
+              throw "La ventana de inicio no es válida: '$($smokeProcess.MainWindowTitle)'"
+            }
+          }
+          finally {
+            Get-Process | Where-Object { $_.Path -eq $appPath } | Stop-Process -ErrorAction SilentlyContinue
+          }
           $installer = "release\CordonDeOro-Setup-$version.exe"
           $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $installer).Hash.ToLower()
           "$hash  CordonDeOro-Setup-$version.exe" | Set-Content -LiteralPath "$installer.sha256" -Encoding ascii

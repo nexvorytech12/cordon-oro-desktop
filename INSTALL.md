@@ -1,6 +1,6 @@
 # Manual breve de instalación
 
-1. El administrador ejecuta `CordonDeOro-Setup-0.2.0.exe` en cada PC con Windows 10/11.
+1. El administrador ejecuta `CordonDeOro-Setup-0.2.1.exe` en cada PC con Windows 10/11.
 2. Selecciona la carpeta de instalación y deja activada la creación del acceso directo.
 3. Inicia **Cordón de Oro** e ingresa con el correo empresarial.
 4. Verifica en **Configuración** que la conexión con Supabase figure como conectada.

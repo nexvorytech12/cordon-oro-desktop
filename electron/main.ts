@@ -1,9 +1,12 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
-import { autoUpdater } from "electron-updater";
+import updaterPackage from "electron-updater";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// electron-updater se publica como CommonJS. En Electron/Node ESM debe
+// importarse el paquete predeterminado antes de extraer autoUpdater.
+const { autoUpdater } = updaterPackage;
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
 

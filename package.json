@@ -1,6 +1,6 @@
 {
   "name": "cordon-de-oro-desktop",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Sistema de gestión empresarial de Cordón de Oro E.I.R.L.",
   "author": "Cordón de Oro E.I.R.L.",
   "license": "UNLICENSED",
@@ -56,8 +56,14 @@
       "package.json"
     ],
     "extraResources": [
-      { "from": "assets/logo.png", "to": "assets/logo.png" },
-      { "from": "assets/icon.ico", "to": "assets/icon.ico" }
+      {
+        "from": "assets/logo.png",
+        "to": "assets/logo.png"
+      },
+      {
+        "from": "assets/icon.ico",
+        "to": "assets/icon.ico"
+      }
     ],
     "win": {
       "target": "nsis",
