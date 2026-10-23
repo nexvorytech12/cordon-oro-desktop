@@ -23,8 +23,11 @@ def stylesheet(theme: str = "light") -> str:
     QFrame#loginHero {{ background: {sidebar}; border: none; border-right: 1px solid {border}; }}
     QLabel#brand {{ color: #B28A36; font-size: 17pt; font-weight: 700; }}
     QLabel#heading {{ font-size: 20pt; font-weight: 700; }}
+    QLabel#sectionHeading {{ font-size: 13pt; font-weight: 700; }}
     QLabel#muted {{ color: {muted}; }}
     QLabel#metric {{ color: #A77D28; font-size: 23pt; font-weight: 700; }}
+    QLabel#statusOnline {{ color: #23835A; font-weight: 700; }}
+    QLabel#statusOffline {{ color: #A63D40; font-weight: 700; }}
     QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit, QTextEdit {{
         background: {card}; border: 1px solid {border}; border-radius: 8px; padding: 9px;
         selection-background-color: #C5A052;
@@ -35,6 +38,8 @@ def stylesheet(theme: str = "light") -> str:
     QPushButton#gold {{ background: #D4B46A; color: #132D43; }}
     QPushButton#gold:hover {{ background: #E0C680; }}
     QPushButton#danger {{ background: #A63D40; }}
+    QCheckBox {{ spacing: 8px; }}
+    QCheckBox::indicator {{ width: 18px; height: 18px; }}
     QPushButton#nav {{ background: transparent; text-align: left; padding: 11px; color: {sidebar_text}; border-radius: 8px; }}
     QPushButton#nav:hover {{ background: {nav_hover}; color: {sidebar_text}; }}
     QPushButton#nav:checked {{ background: {nav_active}; color: {sidebar_text}; border-left: 3px solid #C5A052; }}

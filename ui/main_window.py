@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from models.session import UserSession
+from services.preferences_service import PreferencesService
 from services.supabase_service import SupabaseService
 from services.update_service import ReleaseInfo, UpdateService
 from ui.styles import stylesheet
@@ -16,6 +17,7 @@ from views.modules import CustomersView, InventoryView, orders_view, production_
 from views.reports_view import ReportsView
 from views.sales import CashView, SalesView
 from views.admin import UsersView
+from views.settings_view import SettingsView
 from utils.resources import resource_path
 
 
@@ -40,7 +42,10 @@ class UpdateWorker(QThread):
 
 class MainWindow(QMainWindow):
     def __init__(self, service: SupabaseService, session: UserSession):
-        super().__init__(); self.service, self.session = service, session; self.dark = False
+        super().__init__(); self.service, self.session = service, session
+        self.preferences = PreferencesService()
+        self.dark = self.preferences.theme == "dark"
+        QApplication.instance().setStyleSheet(stylesheet(self.preferences.theme))
         self.setWindowTitle("Cordón de Oro — Sistema de Gestión Empresarial")
         icon = resource_path("assets/icon.ico")
         if icon.exists(): self.setWindowIcon(QIcon(str(icon)))
@@ -49,7 +54,8 @@ class MainWindow(QMainWindow):
         self._build()
         self._subscribe()
         self.connection_timer = QTimer(self); self.connection_timer.timeout.connect(self._connection_status); self.connection_timer.start(3000)
-        QTimer.singleShot(4000, lambda: self._check_updates(silent=True))
+        if self.preferences.automatic_updates:
+            QTimer.singleShot(4000, lambda: self._check_updates(silent=True))
 
     def _build(self) -> None:
         central = QWidget(objectName="page"); root = QHBoxLayout(central); root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
@@ -77,6 +83,10 @@ class MainWindow(QMainWindow):
         ]
         if self.session.can("users.manage"):
             pages.append(("♟  Usuarios", UsersView(self.service)))
+        self.settings_view = SettingsView(self.service, self.session, self.preferences)
+        self.settings_view.preferences_changed.connect(self._apply_preferences)
+        self.settings_view.check_updates_requested.connect(lambda: self._check_updates(silent=False))
+        pages.append(("⚙  Configuración", self.settings_view))
         self.nav_buttons = []
         for i, (label, page) in enumerate(pages):
             button = QPushButton(label, objectName="nav"); button.setCheckable(True); button.clicked.connect(lambda _=False, index=i: self._show(index))
@@ -88,13 +98,12 @@ class MainWindow(QMainWindow):
         top = QFrame(objectName="topbar"); top.setFixedHeight(64); top_layout = QHBoxLayout(top); top_layout.setContentsMargins(18, 8, 18, 8)
         top_layout.addWidget(QLabel(f"{self.session.full_name}  ·  {self.session.role.replace('_', ' ').title()}")); top_layout.addStretch()
         self.global_search = QLineEdit(); self.global_search.setPlaceholderText("Buscar producto, cliente o pedido…"); self.global_search.setMaximumWidth(320); self.global_search.returnPressed.connect(self._search); top_layout.addWidget(self.global_search)
-        theme = QPushButton("◐ Tema"); theme.clicked.connect(self._theme); top_layout.addWidget(theme)
-        updates = QPushButton("↻ Actualizaciones"); updates.clicked.connect(lambda: self._check_updates(silent=False)); top_layout.addWidget(updates)
         logout = QPushButton("Cerrar sesión"); logout.clicked.connect(self._logout); top_layout.addWidget(logout)
         right_layout.addWidget(top); right_layout.addWidget(self.stack, 1); root.addWidget(right, 1)
         self.setCentralWidget(central)
         status = QStatusBar(); status.showMessage("● Conectado a Supabase"); self.setStatusBar(status)
         self._show(0)
+        self._set_sidebar_compact(self.preferences.compact_sidebar)
 
     def _subscribe(self) -> None:
         for table in ("product_variants", "orders", "quotations", "embroidery_jobs", "notifications"):
@@ -123,6 +132,7 @@ class MainWindow(QMainWindow):
         if not self.updater.configured:
             if not silent:
                 QMessageBox.information(self, "Actualizaciones", "Configure GITHUB_REPOSITORY=propietario/repositorio en el archivo .env.")
+                self.settings_view.set_update_status("El repositorio de actualizaciones no está configurado.")
             return
         if self.update_worker and self.update_worker.isRunning(): return
         self.statusBar().showMessage("Buscando actualizaciones…")
@@ -134,8 +144,10 @@ class MainWindow(QMainWindow):
     def _update_found(self, release: ReleaseInfo | None, silent: bool) -> None:
         if not release:
             self.statusBar().showMessage("La aplicación está actualizada", 5000)
+            self.settings_view.set_update_status(f"El sistema está actualizado: versión {self.service.settings.app_version}.")
             if not silent: QMessageBox.information(self, "Actualizaciones", "Ya tiene la versión más reciente.")
             return
+        self.settings_view.set_update_status(f"Nueva versión disponible: {release.version}.")
         answer = QMessageBox.question(
             self,
             f"Actualización {release.version} disponible",
@@ -152,6 +164,7 @@ class MainWindow(QMainWindow):
     def _update_failed(self, message: str, silent: bool) -> None:
         if self.update_progress: self.update_progress.close(); self.update_progress = None
         self.statusBar().showMessage("No se pudo consultar la actualización", 5000)
+        self.settings_view.set_update_status(f"No se pudo buscar la actualización: {message}")
         if not silent: QMessageBox.warning(self, "Actualizaciones", message)
 
     def _install_update(self, path: object) -> None:
@@ -168,14 +181,26 @@ class MainWindow(QMainWindow):
     def _show(self, index: int) -> None:
         self.stack.setCurrentIndex(index)
         for i, button in enumerate(self.nav_buttons): button.setChecked(i == index)
+        if self.stack.currentWidget() is self.settings_view:
+            self.settings_view.sync_from_preferences()
+            self.settings_view.refresh_connection()
 
     def _toggle_sidebar(self) -> None:
         target = 70 if self.sidebar.width() > 100 else 225
         animation = QPropertyAnimation(self.sidebar, b"maximumWidth", self); animation.setDuration(220); animation.setStartValue(self.sidebar.width()); animation.setEndValue(target); animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
         self.sidebar.setMinimumWidth(target); self._sidebar_animation = animation; animation.start()
+        self.preferences.set_compact_sidebar(target == 70)
 
-    def _theme(self) -> None:
-        self.dark = not self.dark; QApplication.instance().setStyleSheet(stylesheet("dark" if self.dark else "light"))
+    def _set_sidebar_compact(self, compact: bool) -> None:
+        width = 70 if compact else 225
+        self.sidebar.setMinimumWidth(width)
+        self.sidebar.setMaximumWidth(width)
+
+    def _apply_preferences(self, theme: str, compact_sidebar: bool) -> None:
+        self.dark = theme == "dark"
+        QApplication.instance().setStyleSheet(stylesheet(theme))
+        self._set_sidebar_compact(compact_sidebar)
+        self.statusBar().showMessage("Configuración guardada", 4000)
 
     def _logout(self) -> None:
         if QMessageBox.question(self, "Cerrar sesión", "¿Desea cerrar la sesión actual?") != QMessageBox.StandardButton.Yes: return
