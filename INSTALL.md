@@ -1,12 +1,14 @@
 # Manual breve de instalación
 
-1. El administrador instala `CordonDeOro-Setup-0.1.0.exe` en cada PC Windows 10/11.
-2. Copia el archivo de configuración `.env` preparado por TI al directorio de la aplicación o a `%LOCALAPPDATA%\Cordón de Oro\.env`.
-3. Verifica fecha/hora de Windows y conectividad HTTPS hacia el dominio del proyecto Supabase.
-4. Inicia la aplicación desde el acceso directo e ingresa con el correo empresarial.
-5. Si la cuenta aparece desactivada, un administrador debe activarla y asignarle un rol desde Usuarios.
+1. El administrador ejecuta `CordonDeOro-Setup-0.2.0.exe` en cada PC con Windows 10/11.
+2. Selecciona la carpeta de instalación y deja activada la creación del acceso directo.
+3. Inicia **Cordón de Oro** e ingresa con el correo empresarial.
+4. Verifica en **Configuración** que la conexión con Supabase figure como conectada.
+5. Si una cuenta está desactivada, un administrador debe activarla y asignarle un rol desde **Usuarios**.
 
-Para actualizar, instale la versión nueva sobre la anterior. Los datos no viven en el equipo y no se eliminan al desinstalar. La caché cifrada local se encuentra en `%LOCALAPPDATA%\Cordón de Oro\cache` y puede borrarse después de cerrar la aplicación.
+La URL y la clave publicable de Supabase se incorporan durante la compilación; el instalador no requiere copiar un archivo `.env` al equipo del usuario. Nunca incluya una clave `service_role` en el proyecto de escritorio.
 
-Ante un error, consulte `%LOCALAPPDATA%\Cordón de Oro\cordon_de_oro.log`. Nunca envíe el archivo `.env` ni tokens de sesión por correo o mensajería.
+Las nuevas versiones se publican en GitHub. La aplicación puede buscarlas al iniciar, descargarlas y ejecutar el instalador actualizado. Los datos empresariales permanecen en Supabase y no se eliminan al desinstalar la aplicación.
+
+Para generar un instalador local, instale Node.js 24 o posterior y ejecute `./build.ps1`. El resultado se guarda en `release\`.
 

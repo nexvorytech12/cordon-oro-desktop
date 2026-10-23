@@ -9,4 +9,7 @@ output/
 *.spec
 *.log
 .vscode/
-
+node_modules/
+dist-electron/
+release/
+*.tsbuildinfo
